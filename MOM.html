@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>A3 Report - Standar Otomotif (Dengan List Summary Data)</title>
+    <!-- SheetJS untuk Export Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <!-- html2pdf untuk export PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #e2e8f0;
+            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            width: 100%;
+            background: #f1f5f9;
+            border-radius: 28px;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.2);
+            padding: 20px 28px 32px 28px;
+            margin-bottom: 30px;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 25px;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 18px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #1f2937;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+        button:hover { background: #111827; transform: scale(1.02); }
+        .btn-excel { background: #2b6e3c; }
+        .btn-excel:hover { background: #1e4a2a; }
+        .btn-pdf { background: #b91c1c; }
+        .btn-pdf:hover { background: #7f1a1a; }
+        .btn-print { background: #1e4a76; }
+        .btn-print:hover { background: #0f3a5a; }
+        .btn-setting { background: #6b21a5; }
+        .btn-setting:hover { background: #4c1d95; }
+        .btn-database { background: #0d9488; }
+        .btn-database:hover { background: #0f766e; }
+        .btn-clear { background: #dc2626; }
+        .btn-clear:hover { background: #b91c1c; }
+        .btn-summary { background: #ea580c; }
+        .btn-summary:hover { background: #c2410c; }
+
+        .form-panel, .summary-panel {
+            background: white;
+            border-radius: 24px;
+            padding: 22px;
+            margin-bottom: 30px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .form-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #1e3a8a;
+            border-left: 5px solid #2563eb;
+            padding-left: 14px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 18px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .input-group label {
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #374151;
+        }
+        .input-group input, .input-group textarea, .input-group select {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: #fefefe;
+        }
+        .input-group textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        /* Tabel Countermeasures */
+        .counter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .counter-table th, .counter-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 8px;
+            font-size: 0.8rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        .counter-table th {
+            background: #dbeafe;
+            font-weight: 700;
+        }
+        .counter-table input, .counter-table textarea {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-family: inherit;
+        }
+        .delete-row-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .delete-row-btn:hover { background: #dc2626; }
+
+        .why-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .why-table th, .why-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+        .why-table th {
+            background: #e0f2fe;
+        }
+
+        .fishbone-container {
+            background: #fefce8;
+            border-radius: 20px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+        .fishbone-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .fishbone-cat {
+            flex: 1;
+            min-width: 150px;
+            background: #fff7ed;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        .fishbone-cat strong {
+            display: block;
+            font-size: 0.7rem;
+            color: #9a3412;
+            margin-bottom: 6px;
+        }
+        .fishbone-cat textarea {
+            width: 100%;
+            padding: 6px;
+            font-size: 0.7rem;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+        }
+
+        .image-section {
+            grid-column: span 2;
+            background: #f9fafb;
+            border-radius: 20px;
+            padding: 16px;
+            margin-top: 5px;
+        }
+        .image-label {
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .image-upload-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+            align-items: center;
+        }
+        .image-card {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: 130px;
+            border: 1px solid #e2e8f0;
+        }
+        .image-card img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        .image-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            gap: 6px;
+        }
+        .edit-img-btn, .delete-img-btn {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+        }
+        .edit-img-btn { background: #f59e0b; color: white; }
+        .delete-img-btn { background: #ef4444; color: white; }
+        .add-img-placeholder {
+            border: 2px dashed #9ca3af;
+            border-radius: 16px;
+            width: 130px;
+            height: 130px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fef9e3;
+            color: #4b5563;
+            font-size: 0.7rem;
+        }
+        .row-buttons {
+            margin-top: 22px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        /* Tabel Summary */
+        .summary-table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .summary-table th, .summary-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .summary-table th {
+            background: #1e3a8a;
+            color: white;
+            font-weight: 700;
+        }
+        .summary-table tr:hover {
+            background: #f1f5f9;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-view, .btn-edit-summary {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+        }
+        .btn-view { background: #3b82f6; color: white; }
+        .btn-view:hover { background: #2563eb; }
+        .btn-edit-summary { background: #f59e0b; color: white; }
+        .btn-edit-summary:hover { background: #d97706; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 28px;
+            width: 550px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content h3 {
+            margin-bottom: 20px;
+        }
+        .modal-content input, .modal-content textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            font-family: inherit;
+        }
+        .database-list {
+            max-height: 350px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        .db-item {
+            background: #f3f4f6;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e5e7eb;
+        }
+        .db-item:hover { background: #e5e7eb; }
+        .db-item .load-btn { background: #2563eb; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; color: white; border: none; cursor: pointer; margin-right: 5px; }
+        .db-item .delete-db-btn { background: #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; color: white; border: none; cursor: pointer; }
+        .db-info { flex: 1; }
+        .db-info strong { display: block; font-size: 0.85rem; }
+        .db-info small { font-size: 0.7rem; color: #6b7280; }
+
+        /* A3 Sheet untuk PDF */
+        .a3-sheet {
+            background: white;
+            width: 100%;
+            box-shadow: 0 12px 28px -8px rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        .a3-content {
+            padding: 24px 32px;
+        }
+        .kop-surat {
+            text-align: center;
+            border-bottom: 3px solid #0c4a6e;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+        .kop-surat h1 {
+            font-size: 1.5rem;
+            color: #0c4a6e;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .kop-surat .perusahaan {
+            font-size: 0.8rem;
+            color: #334155;
+            font-weight: 500;
+        }
+        .info-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            background: #eef2ff;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #d9e2ef;
+        }
+        .info-item {
+            flex: 1;
+            min-width: 130px;
+        }
+        .info-item .label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #2563eb;
+            text-transform: uppercase;
+        }
+        .info-item .value {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #0f172a;
+            margin-top: 2px;
+        }
+        .vendor-section, .member-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .a3-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .a3-card {
+            background: #fafcff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            break-inside: avoid;
+        }
+        .a3-card h4 {
+            background: #e0f2fe;
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            color: #0369a1;
+            font-weight: 700;
+        }
+        .full-width { grid-column: span 2; }
+        .image-gallery-report {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .report-img {
+            width: 100px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+        }
+        .attendance-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .attendance-tag {
+            background: #e6f7e6;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .target-pic-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 8px;
+            background: #fef9e3;
+            padding: 10px;
+            border-radius: 12px;
+        }
+        .sign-off {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            border-top: 1px dashed #aaa;
+            padding-top: 16px;
+            font-size: 0.7rem;
+        }
+        .report-counter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .report-counter-table th, .report-counter-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 8px;
+            font-size: 0.8rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        .report-counter-table th { background: #dbeafe; font-weight: 700; }
+        .report-counter-table td:first-child { text-align: center; vertical-align: middle; width: 8%; }
+
+        @media print {
+            body { background: white; padding: 0; margin: 0; }
+            .toolbar, .form-panel, .summary-panel, .row-buttons, .btn-group, .no-print, .modal { display: none !important; }
+            .a3-sheet { box-shadow: none; margin: 0; border-radius: 0; }
+            @page { size: A3 portrait; margin: 1.5cm 1cm 1cm 1cm; }
+            .a3-content { padding: 0 15px; }
+            .a3-card { break-inside: avoid; }
+        }
+        @media (max-width: 780px) {
+            .a3-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 12px;
+            color: #4b5563;
+        }
+        .add-row-btn {
+            background: #10b981;
+            margin-top: 8px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="toolbar no-print">
+        <div class="btn-group">
+            <button id="printA3Btn" class="btn-print">🖨️ Cetak Laporan Saat Ini</button>
+            <button id="pdfSimulateBtn" class="btn-pdf">📄 Export PDF Laporan Ini</button>
+            <button id="exportExcelBtn" class="btn-excel">📊 Export Excel Laporan Ini</button>
+            <button id="clearAllBtn" class="btn-clear">🗑️ Clear All Form</button>
+            <button id="settingBtn" class="btn-setting">⚙️ Setting</button>
+            <button id="databaseBtn" class="btn-database">🗄️ Database</button>
+            <button id="summaryBtn" class="btn-summary">📋 List Summary Data</button>
+        </div>
+    </div>
+
+    <!-- Modal Setting -->
+    <div id="settingModal" class="modal">
+        <div class="modal-content">
+            <h3>⚙️ Pengaturan Perusahaan</h3>
+            <label>Nama PT / Perusahaan:</label>
+            <input type="text" id="companyNameSetting" placeholder="Contoh: PT. Kawasaki Motor Indonesia" value="PT. Kawasaki Motor Indonesia">
+            <label>Nama Vendor / Supplier Terkait:</label>
+            <textarea id="vendorNameSetting" rows="3">PT. XYZ Auto Parts, PT. ABC Steel</textarea>
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <button id="saveSettingBtn" style="background:#2563eb;">Simpan</button>
+                <button id="closeSettingBtn" style="background:#9ca3af;">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Database -->
+    <div id="databaseModal" class="modal">
+        <div class="modal-content">
+            <h3>🗄️ Manajemen Database (JSON)</h3>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <button id="saveToDatabaseBtn" style="background:#10b981;">💾 Simpan ke Database</button>
+                <button id="exportDatabaseBtn" style="background:#f59e0b;">📥 Export Database (JSON)</button>
+                <button id="uploadDatabaseBtn" style="background:#3b82f6;">📁 Upload Database (JSON)</button>
+                <input type="file" id="uploadDbFile" accept=".json" style="display:none">
+            </div>
+            <div id="databaseListContainer" class="database-list">
+                <p style="color:#9ca3af; text-align:center;">Belum ada data tersimpan</p>
+            </div>
+            <button id="closeDatabaseBtn" style="background:#6b7280; width:100%; margin-top:10px;">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Modal List Summary -->
+    <div id="summaryModal" class="modal">
+        <div class="modal-content" style="width: 95%; max-width: 1300px;">
+            <h3>📋 List Summary Data Meeting</h3>
+            <div class="summary-table-container">
+                <table class="summary-table" id="summaryTable">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Judul Masalah</th>
+                            <th>Tanggal</th>
+                            <th>Nama Vendor/Supplier</th>
+                            <th>Target</th>
+                            <th>PIC</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTableBody">
+                        <tr><td colspan="7" style="text-align:center;">Belum ada data</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end;">
+                <button id="closeSummaryBtn" style="background:#6b7280;">Tutup</button>
+                <button id="refreshSummaryBtn" style="background:#2563eb;">🔄 Refresh</button>
+                <button id="exportSummaryExcelBtn" style="background:#2b6e3c;">📊 Export Excel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FORM A3 REPORT -->
+    <div class="form-panel no-print" id="formPanel">
+        <div class="form-title">📝 Form A3 Report (Problem Solving 8 Langkah)</div>
+        <div class="form-grid">
+            <div class="input-group"><label>📌 JUDUL MASALAH</label><input type="text" id="a3Title" value="Peningkatan Defect Welding pada Line Assy"></div>
+            <div class="input-group"><label>📅 TANGGAL</label><input type="date" id="a3Date" value="2025-04-10"></div>
+            <div class="input-group"><label>⏰ WAKTU</label><input type="text" id="a3Time" value="09:00 - 10:30 WIB"></div>
+            <div class="input-group"><label>🏭 AREA / PLANT</label><input type="text" id="a3Area" value="Plant Karawang - Welding Dept"></div>
+            <div class="input-group"><label>👤 PIC LEADER</label><input type="text" id="a3Pic" value="Budi Santoso"></div>
+            
+            <div class="input-group"><label>👥 MEMBER HADIR (pisah koma)</label><textarea id="attendanceMembers" rows="2">Andi Prasetyo, Siti Aminah, Rudi Hartono, Dewi Sartika</textarea></div>
+            <div class="input-group"><label>📅 TANGGAL TARGET</label><input type="date" id="targetDateSummary" value="2025-05-10"></div>
+            <div class="input-group"><label>👤 PIC TARGET</label><input type="text" id="targetPicSummary" value="Budi Santoso (Leader)"></div>
+            
+            <div class="input-group"><label>📖 1. BACKGROUND</label><textarea id="a3Background" rows="2">Defect welding meningkat dari 2% menjadi 6.5% dalam 2 minggu terakhir</textarea></div>
+            <div class="input-group"><label>📊 2. CURRENT CONDITION</label><textarea id="a3Current" rows="2">Data shift: defect tertinggi shift malam, titik las nomor 3 dan 4</textarea></div>
+            <div class="input-group"><label>🎯 3. TARGET CONDITION</label><textarea id="a3Target" rows="2">Menurunkan defect menjadi ≤ 2.5% dalam 4 minggu</textarea></div>
+            
+            <div class="input-group" style="grid-column: span 2;">
+                <label>🔍 4a. ROOT CAUSE ANALYSIS - 5 WHY</label>
+                <table class="why-table">
+                    <thead><tr><th>Why</th><th>Pertanyaan</th><th>Jawaban / Akar Masalah</th></tr></thead>
+                    <tbody>
+                        <tr><td style="width:10%">1</td><td style="width:45%"><input type="text" id="why1Q" value="Mengapa defect welding meningkat?" style="width:100%"></td><td style="width:45%"><input type="text" id="why1A" value="Arus las tidak stabil" style="width:100%"></td></tr>
+                        <tr><td>2</td><td><input type="text" id="why2Q" value="Mengapa arus las tidak stabil?" style="width:100%"></td><td><input type="text" id="why2A" value="Kalibrasi mesin overdue 3 bulan" style="width:100%"></td></tr>
+                        <tr><td>3</td><td><input type="text" id="why3Q" value="Mengapa kalibrasi overdue?" style="width:100%"></td><td><input type="text" id="why3A" value="Tidak ada jadwal kalibrasi rutin" style="width:100%"></td></tr>
+                        <tr><td>4</td><td><input type="text" id="why4Q" value="Mengapa tidak ada jadwal?" style="width:100%"></td><td><input type="text" id="why4A" value="Tidak ada SOP kalibrasi mesin las" style="width:100%"></td></tr>
+                        <tr><td>5</td><td><input type="text" id="why5Q" value="Mengapa SOP tidak ada?" style="width:100%"></td><td><input type="text" id="why5A" value="Tim engineering belum membuat standar" style="width:100%"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="input-group" style="grid-column: span 2;">
+                <label>🐟 4b. FISHBONE DIAGRAM (6M)</label>
+                <div class="fishbone-container">
+                    <div class="fishbone-categories">
+                        <div class="fishbone-cat"><strong>Manusia</strong><textarea id="fishboneMan" rows="2">Kurang training, operator baru</textarea></div>
+                        <div class="fishbone-cat"><strong>Mesin</strong><textarea id="fishboneMachine" rows="2">Kalibrasi overdue, elektroda aus</textarea></div>
+                        <div class="fishbone-cat"><strong>Material</strong><textarea id="fishboneMaterial" rows="2">Ketebalan plat tidak konsisten</textarea></div>
+                        <div class="fishbone-cat"><strong>Metode</strong><textarea id="fishboneMethod" rows="2">Tidak ada standar setting arus</textarea></div>
+                        <div class="fishbone-cat"><strong>Pengukuran</strong><textarea id="fishboneMeasurement" rows="2">Alat ukur tidak terkalibrasi</textarea></div>
+                        <div class="fishbone-cat"><strong>Lingkungan</strong><textarea id="fishboneEnv" rows="2">Penerangan kurang, suhu panas</textarea></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group" style="grid-column: span 2;">
+                <label>⚙️ 5. COUNTERMEASURES (Tindakan Perbaikan)</label>
+                <table class="counter-table">
+                    <thead><tr><th style="width:5%">No</th><th style="width:45%">Countermeasure</th><th style="width:22%">Target</th><th style="width:20%">PIC</th><th style="width:8%">Aksi</th></tr></thead>
+                    <tbody id="countermeasuresBody">
+                        <tr><td>1</td><td><textarea rows="2" class="cm-counter">Kalibrasi ulang mesin las</textarea></td><td><input type="text" class="cm-target" value="30 April 2025"></td><td><input type="text" class="cm-pic" value="Tim Maintenance"></td><td style="text-align:center"><button class="delete-row-btn" onclick="deleteCounterRow(this)">🗑️ Hapus</button></td></tr>
+                        <tr><td>2</td><td><textarea rows="2" class="cm-counter">Ganti elektroda setiap 400 siklus</textarea></td><td><input type="text" class="cm-target" value="25 April 2025"></td><td><input type="text" class="cm-pic" value="Shift Leader"></td><td style="text-align:center"><button class="delete-row-btn" onclick="deleteCounterRow(this)">🗑️ Hapus</button></td></tr>
+                        <tr><td>3</td><td><textarea rows="2" class="cm-counter">Training standar work untuk operator baru</textarea></td><td><input type="text" class="cm-target" value="15 Mei 2025"></td><td><input type="text" class="cm-pic" value="Training Dept"></td><td style="text-align:center"><button class="delete-row-btn" onclick="deleteCounterRow(this)">🗑️ Hapus</button></td></tr>
+                    </tbody>
+                </table>
+                <button type="button" id="addCounterRowBtn" class="add-row-btn">+ Tambah Baris</button>
+            </div>
+            
+            <div class="input-group"><label>✅ 6. CHECK / VERIFICATION</label><textarea id="a3Check" rows="4">Setelah 2 minggu implementasi, defect berhasil turun dari 6.5% menjadi 3.2%.</textarea></div>
+            <div class="input-group"><label>📌 7. FOLLOW UP</label><textarea id="a3Followup" rows="2">- Perketat jadwal ganti elektroda<br>- Audit harian oleh supervisor</textarea></div>
+            
+            <div class="image-section">
+                <div class="image-label">📸 DOKUMENTASI PENDUKUNG
+                    <button type="button" id="addImageBtn" class="image-upload-btn">+ Tambah Gambar</button>
+                </div>
+                <div id="galleryContainer" class="image-gallery"></div>
+                <input type="file" id="hiddenFileInput" accept="image/*" style="display:none" multiple>
+            </div>
+        </div>
+        <div class="row-buttons">
+            <button id="refreshReportBtn" style="background:#2563eb;">🔄 Refresh Tampilan Laporan</button>
+        </div>
+    </div>
+
+    <!-- LEMBAR A3 REPORT -->
+    <div id="a3SheetContainer" class="a3-sheet">
+        <div id="a3Dynamic" class="a3-content"></div>
+    </div>
+    <div class="footer-note no-print">✅ A3 Report | Klik "List Summary Data" untuk melihat semua data yang tersimpan</div>
+</div>
+
+<script>
+    let imageList = [];
+    let nextId = 1;
+    let companyName = "PT. Kawasaki Motor Indonesia";
+    let vendorName = "PT. XYZ Auto Parts, PT. ABC Steel";
+    let currentEditId = null;
+    
+    const DB_KEY = "A3_Report_Database";
+    
+    // Delete Counter Row
+    window.deleteCounterRow = function(btn) {
+        const row = btn.closest('tr');
+        if(row) {
+            row.remove();
+            document.querySelectorAll('#countermeasuresBody tr').forEach((row, idx) => { row.cells[0].innerText = idx + 1; });
+            renderA3Report();
+        }
+    }
+    
+    // DOM Elements
+    const a3Title = document.getElementById('a3Title');
+    const a3Date = document.getElementById('a3Date');
+    const a3Time = document.getElementById('a3Time');
+    const a3Area = document.getElementById('a3Area');
+    const a3Pic = document.getElementById('a3Pic');
+    const attendanceMembers = document.getElementById('attendanceMembers');
+    const targetDateSummary = document.getElementById('targetDateSummary');
+    const targetPicSummary = document.getElementById('targetPicSummary');
+    const a3Background = document.getElementById('a3Background');
+    const a3Current = document.getElementById('a3Current');
+    const a3Target = document.getElementById('a3Target');
+    const a3Check = document.getElementById('a3Check');
+    const a3Followup = document.getElementById('a3Followup');
+    
+    const whyQ = [null, document.getElementById('why1Q'), document.getElementById('why2Q'), document.getElementById('why3Q'), document.getElementById('why4Q'), document.getElementById('why5Q')];
+    const whyA = [null, document.getElementById('why1A'), document.getElementById('why2A'), document.getElementById('why3A'), document.getElementById('why4A'), document.getElementById('why5A')];
+    
+    const fishboneMan = document.getElementById('fishboneMan');
+    const fishboneMachine = document.getElementById('fishboneMachine');
+    const fishboneMaterial = document.getElementById('fishboneMaterial');
+    const fishboneMethod = document.getElementById('fishboneMethod');
+    const fishboneMeasurement = document.getElementById('fishboneMeasurement');
+    const fishboneEnv = document.getElementById('fishboneEnv');
+    
+    const countermeasuresBody = document.getElementById('countermeasuresBody');
+    const addCounterRowBtn = document.getElementById('addCounterRowBtn');
+    
+    function addCountermeasureRow() {
+        const rowCount = countermeasuresBody.querySelectorAll('tr').length + 1;
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `<td>${rowCount}</td>
+            <td><textarea rows="2" class="cm-counter" placeholder="Deskripsi tindakan..."></textarea></td>
+            <td><input type="text" class="cm-target" placeholder="dd/mm/yyyy"></td>
+            <td><input type="text" class="cm-pic" placeholder="Nama PIC"></td>
+            <td style="text-align:center"><button class="delete-row-btn" onclick="deleteCounterRow(this)">🗑️ Hapus</button></td>`;
+        countermeasuresBody.appendChild(newRow);
+        newRow.querySelectorAll('textarea, input').forEach(inp => inp.addEventListener('input', renderA3Report));
+        renderA3Report();
+    }
+    addCounterRowBtn.addEventListener('click', addCountermeasureRow);
+    
+    function getCountermeasuresData() {
+        const data = [];
+        countermeasuresBody.querySelectorAll('tr').forEach(row => {
+            const counter = row.querySelector('.cm-counter')?.value || '';
+            const target = row.querySelector('.cm-target')?.value || '';
+            const pic = row.querySelector('.cm-pic')?.value || '';
+            if(counter.trim() || target.trim() || pic.trim()) data.push({ counter, target, pic });
+        });
+        return data;
+    }
+    
+    function clearAllForms() {
+        a3Title.value = ''; a3Date.value = ''; a3Time.value = ''; a3Area.value = ''; a3Pic.value = '';
+        attendanceMembers.value = ''; targetDateSummary.value = ''; targetPicSummary.value = '';
+        a3Background.value = ''; a3Current.value = ''; a3Target.value = ''; a3Check.value = ''; a3Followup.value = '';
+        for(let i=1;i<=5;i++) { if(whyQ[i]) whyQ[i].value = ''; if(whyA[i]) whyA[i].value = ''; }
+        if(fishboneMan) fishboneMan.value = ''; if(fishboneMachine) fishboneMachine.value = '';
+        if(fishboneMaterial) fishboneMaterial.value = ''; if(fishboneMethod) fishboneMethod.value = '';
+        if(fishboneMeasurement) fishboneMeasurement.value = ''; if(fishboneEnv) fishboneEnv.value = '';
+        countermeasuresBody.innerHTML = '';
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `<td>1</td><td><textarea rows="2" class="cm-counter" placeholder="Deskripsi tindakan..."></textarea></td><td><input type="text" class="cm-target" placeholder="dd/mm/yyyy"></td><td><input type="text" class="cm-pic" placeholder="Nama PIC"></td><td style="text-align:center"><button class="delete-row-btn" onclick="deleteCounterRow(this)">🗑️ Hapus</button></td>`;
+        countermeasuresBody.appendChild(newRow);
+        imageList = [];
+        renderGallery();
+        renderA3Report();
+        alert("Semua form telah dikosongkan!");
+    }
+    
+    function getAutoFileName() {
+        const clean = (str) => str.replace(/[^a-z0-9]/gi, '_').substring(0, 40);
+        return `${clean(companyName)}_${clean(vendorName.split('\n')[0] || 'Vendor')}_${clean(a3Title.value || 'A3_Report')}_${a3Date.value || new Date().toISOString().slice(0,10)}`;
+    }
+    
+    // Gallery Functions
+    const galleryContainer = document.getElementById('galleryContainer');
+    const hiddenFileInput = document.getElementById('hiddenFileInput');
+    const addImageBtn = document.getElementById('addImageBtn');
+    
+    function renderGallery() {
+        galleryContainer.innerHTML = '';
+        if(imageList.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'add-img-placeholder';
+            emptyDiv.innerText = '📷 Belum ada gambar\nKlik + Tambah';
+            emptyDiv.onclick = () => hiddenFileInput.click();
+            galleryContainer.appendChild(emptyDiv);
+        } else {
+            imageList.forEach(img => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.innerHTML = `<img src="${img.dataUrl}"><div class="image-actions"><button class="edit-img-btn" data-id="${img.id}">✏️ Edit</button><button class="delete-img-btn" data-id="${img.id}">🗑️ Hapus</button></div>`;
+                galleryContainer.appendChild(card);
+            });
+            const addCard = document.createElement('div');
+            addCard.className = 'add-img-placeholder';
+            addCard.innerHTML = '+ Tambah';
+            addCard.onclick = () => hiddenFileInput.click();
+            galleryContainer.appendChild(addCard);
+        }
+        document.querySelectorAll('.edit-img-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); editImageById(parseInt(btn.dataset.id)); }));
+        document.querySelectorAll('.delete-img-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); deleteImageById(parseInt(btn.dataset.id)); }));
+    }
+    
+    function addNewImage(dataUrl) { imageList.push({ id: nextId++, dataUrl }); renderGallery(); renderA3Report(); }
+    function editImageById(id) {
+        const img = imageList.find(i => i.id === id);
+        if(!img) return;
+        const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
+        input.onchange = (e) => { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = (ev) => { img.dataUrl = ev.target.result; renderGallery(); renderA3Report(); }; reader.readAsDataURL(e.target.files[0]); } };
+        input.click();
+    }
+    function deleteImageById(id) { imageList = imageList.filter(i => i.id !== id); renderGallery(); renderA3Report(); }
+    
+    addImageBtn.onclick = () => hiddenFileInput.click();
+    hiddenFileInput.onchange = (e) => { if(e.target.files) Array.from(e.target.files).forEach(file => { if(file.type.startsWith('image/')) { const reader = new FileReader(); reader.onload = (ev) => addNewImage(ev.target.result); reader.readAsDataURL(file); } }); hiddenFileInput.value = ''; };
+    
+    // Render Functions
+    function renderAttendanceTags(str) {
+        if(!str.trim()) return '<span style="color:#9ca3af;">Tidak ada data</span>';
+        return '<div class="attendance-list">' + str.split(',').map(m => `<span class="attendance-tag">👤 ${escapeHtml(m.trim())}</span>`).join('') + '</div>';
+    }
+    
+    function renderWhyTable() {
+        let html = '<table class="why-table"><thead><tr><th>Why</th><th>Pertanyaan</th><th>Jawaban</th></tr></thead><tbody>';
+        for(let i=1;i<=5;i++) html += `<tr><td>${i}</td><td>${escapeHtml(whyQ[i]?.value || '-')}</td><td>${escapeHtml(whyA[i]?.value || '-')}</td></tr>`;
+        html += '</tbody></table>';
+        return html;
+    }
+    
+    function renderFishbone() {
+        return `<div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <div style="flex:1; background:#fff7ed; padding:8px; border-radius:12px;"><strong>Manusia:</strong><br>${escapeHtml(fishboneMan?.value || '-')}</div>
+            <div style="flex:1; background:#fff7ed; padding:8px; border-radius:12px;"><strong>Mesin:</strong><br>${escapeHtml(fishboneMachine?.value || '-')}</div>
+            <div style="flex:1; background:#fff7ed; padding:8px; border-radius:12px;"><strong>Material:</strong><br>${escapeHtml(fishboneMaterial?.value || '-')}</div>
+            <div style="flex:1; background:#fff7ed; padding:8px; border-radius:12px;"><strong>Metode:</strong><br>${escapeHtml(fishboneMethod?.value || '-')}</div>
+            <div style="flex:1; background:#fff7ed; padding:8px; border-radius:12px;"><strong>Pengukuran:</strong><br>${escapeHtml(fishboneMeasurement?.value || '-')}</div>
+            <div style="flex:1; background:#fff7ed; padding:8px; border-radius:12px;"><strong>Lingkungan:</strong><br>${escapeHtml(fishboneEnv?.value || '-')}</div>
+        </div>`;
+    }
+    
+    function renderCountermeasuresTable() {
+        const cmData = getCountermeasuresData();
+        if(cmData.length === 0) return '<p style="color:#9ca3af;">Belum ada data</p>';
+        let html = '<table class="report-counter-table"><thead><tr><th>No</th><th>Countermeasure</th><th>Target</th><th>PIC</th></tr></thead><tbody>';
+        cmData.forEach((item, idx) => html += `<tr><td style="text-align:center">${idx+1}</td><td>${escapeHtml(item.counter)}</td><td>${escapeHtml(item.target)}</td><td>${escapeHtml(item.pic)}</td></tr>`);
+        html += '</tbody></table>';
+        return html;
+    }
+    
+    function renderKopSurat() {
+        return `<div class="kop-surat"><h1>A3 REPORT - PROBLEM SOLVING</h1><div class="perusahaan">${escapeHtml(companyName)}</div></div>`;
+    }
+    
+    function renderA3Report() {
+        const title = a3Title.value.trim() || "A3 Problem Solving";
+        const dateVal = a3Date.value ? new Date(a3Date.value).toLocaleDateString('id-ID') : "-";
+        const imagesHtml = imageList.length === 0 ? '<div>Tidak ada gambar</div>' : '<div class="image-gallery-report">' + imageList.map(img => `<img src="${img.dataUrl}" class="report-img">`).join('') + '</div>';
+        const vendorLines = vendorName.split('\n').filter(v => v.trim()).map(v => `• ${escapeHtml(v.trim())}`).join('<br>');
+        
+        const html = `
+            ${renderKopSurat()}
+            <div class="info-bar">
+                <div class="info-item"><div class="label">JUDUL</div><div class="value">${escapeHtml(title)}</div></div>
+                <div class="info-item"><div class="label">TANGGAL</div><div class="value">${escapeHtml(dateVal)}</div></div>
+                <div class="info-item"><div class="label">WAKTU</div><div class="value">${escapeHtml(a3Time.value)}</div></div>
+                <div class="info-item"><div class="label">AREA</div><div class="value">${escapeHtml(a3Area.value)}</div></div>
+                <div class="info-item"><div class="label">PIC</div><div class="value">${escapeHtml(a3Pic.value)}</div></div>
+            </div>
+            <div class="vendor-section"><strong>🏢 Vendor :</strong><br>${vendorLines || '-'}</div>
+            <div class="member-section"><strong>👥 Member Hadir :</strong><br>${renderAttendanceTags(attendanceMembers.value)}</div>
+            <div class="a3-grid">
+                <div class="a3-card"><h4>1. BACKGROUND</h4><p>${escapeHtml(a3Background.value)}</p></div>
+                <div class="a3-card"><h4>2. CURRENT CONDITION</h4><p>${escapeHtml(a3Current.value)}</p></div>
+                <div class="a3-card"><h4>3. TARGET CONDITION</h4><p>${escapeHtml(a3Target.value)}</p></div>
+                <div class="a3-card"><h4>4a. 5 WHY ANALYSIS</h4>${renderWhyTable()}</div>
+                <div class="a3-card full-width"><h4>4b. FISHBONE DIAGRAM</h4>${renderFishbone()}</div>
+                <div class="a3-card full-width"><h4>5. COUNTERMEASURES</h4>${renderCountermeasuresTable()}</div>
+                <div class="a3-card"><h4>6. CHECK / VERIFICATION</h4><p>${escapeHtml(a3Check.value)}</p></div>
+                <div class="a3-card"><h4>7. FOLLOW UP</h4><p>${escapeHtml(a3Followup.value)}</p></div>
+                <div class="a3-card full-width"><h4>🎯 TARGET & PIC</h4><div class="target-pic-row"><div><strong>Target:</strong> ${escapeHtml(targetDateSummary.value ? new Date(targetDateSummary.value).toLocaleDateString('id-ID') : '-')}</div><div><strong>PIC Target:</strong> ${escapeHtml(targetPicSummary.value)}</div></div></div>
+                <div class="a3-card full-width"><h4>8. DOKUMENTASI</h4>${imagesHtml}</div>
+            </div>
+            <div class="sign-off"><div>Disusun: <u>${escapeHtml(a3Pic.value)}</u><br>Leader</div><div>Disetujui: <u>${escapeHtml(a3Pic.value)}</u><br>Section Head</div><div>Cetak: ${new Date().toLocaleString()}</div></div>
+        `;
+        document.getElementById('a3Dynamic').innerHTML = html;
+    }
+    
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
+    
+    // Database Functions
+    function collectAllData() {
+        return {
+            version: "1.0", exportedAt: new Date().toISOString(),
+            companyName, vendorName, title: a3Title.value, date: a3Date.value, time: a3Time.value,
+            area: a3Area.value, pic: a3Pic.value, attendance: attendanceMembers.value,
+            targetDate: targetDateSummary.value, targetPic: targetPicSummary.value,
+            background: a3Background.value, current: a3Current.value, target: a3Target.value,
+            why1Q: whyQ[1]?.value, why1A: whyA[1]?.value, why2Q: whyQ[2]?.value, why2A: whyA[2]?.value,
+            why3Q: whyQ[3]?.value, why3A: whyA[3]?.value, why4Q: whyQ[4]?.value, why4A: whyA[4]?.value,
+            why5Q: whyQ[5]?.value, why5A: whyA[5]?.value,
+            fishboneMan: fishboneMan?.value, fishboneMachine: fishboneMachine?.value,
+            fishboneMaterial: fishboneMaterial?.value, fishboneMethod: fishboneMethod?.value,
+            fishboneMeasurement: fishboneMeasurement?.value, fishboneEnv: fishboneEnv?.value,
+            countermeasures: getCountermeasuresData(), check: a3Check.value, followup: a3Followup.value,
+            images: imageList.map(img => img.dataUrl)
+        };
+    }
+    
+    function saveToDatabase() {
+        const data = collectAllData();
+        const fileName = getAutoFileName();
+        const saveData = { id: Date.now(), name: fileName, savedAt: new Date().toLocaleString(), data: data };
+        let db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        db.unshift(saveData);
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+        alert(`✅ Data berhasil disimpan!\n📁 ${fileName}`);
+        renderDatabaseList();
+        if(document.getElementById('summaryModal').style.display === 'flex') renderSummaryTable();
+    }
+    
+    function exportDatabaseToJSON() {
+        const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        if(db.length === 0) { alert("⚠️ Database kosong!"); return; }
+        const blob = new Blob([JSON.stringify(db, null, 2)], {type: "application/json"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `A3_Report_Database_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        alert(`✅ Database berhasil diexport! (${db.length} data)`);
+    }
+    
+    function uploadDatabaseFile() {
+        const file = document.getElementById('uploadDbFile').files[0];
+        if(!file) { alert("⚠️ Pilih file JSON!"); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const uploadedData = JSON.parse(e.target.result);
+                if(Array.isArray(uploadedData)) localStorage.setItem(DB_KEY, JSON.stringify(uploadedData));
+                else if(typeof uploadedData === 'object') localStorage.setItem(DB_KEY, JSON.stringify([{id:Date.now(), name:"Uploaded", savedAt:new Date().toLocaleString(), data:uploadedData}]));
+                else throw new Error("Format tidak valid");
+                alert(`✅ Database berhasil diupload!`);
+                renderDatabaseList();
+                renderSummaryTable();
+            } catch(err) { alert("❌ File JSON tidak valid!"); }
+        };
+        reader.readAsText(file);
+        document.getElementById('uploadDbFile').value = '';
+    }
+    
+    function loadFromDatabase(savedData) {
+        const d = savedData.data;
+        companyName = d.companyName || companyName; vendorName = d.vendorName || vendorName;
+        a3Title.value = d.title || ""; a3Date.value = d.date || ""; a3Time.value = d.time || "";
+        a3Area.value = d.area || ""; a3Pic.value = d.pic || ""; attendanceMembers.value = d.attendance || "";
+        targetDateSummary.value = d.targetDate || ""; targetPicSummary.value = d.targetPic || "";
+        a3Background.value = d.background || ""; a3Current.value = d.current || ""; a3Target.value = d.target || "";
+        if(whyQ[1]) whyQ[1].value = d.why1Q || ""; if(whyA[1]) whyA[1].value = d.why1A || "";
+        if(whyQ[2]) whyQ[2].value = d.why2Q || ""; if(whyA[2]) whyA[2].value = d.why2A || "";
+        if(whyQ[3]) whyQ[3].value = d.why3Q || ""; if(whyA[3]) whyA[3].value = d.why3A || "";
+        if(whyQ[4]) whyQ[4].value = d.why4Q || ""; if(whyA[4]) whyA[4].value = d.why4A || "";
+        if(whyQ[5]) whyQ[5].value = d.why5Q || ""; if(whyA[5]) whyA[5].value = d.why5A || "";
+        if(fishboneMan) fishboneMan.value = d.fishboneMan || "";
+        if(fishboneMachine) fishboneMachine.value = d.fishboneMachine || "";
+        if(fishboneMaterial) fishboneMaterial.value = d.fishboneMaterial || "";
+        if(fishboneMethod) fishboneMethod.value = d.fishboneMethod || "";
+        if(fishboneMeasurement) fishboneMeasurement.value = d.fishboneMeasurement || "";
+        if(fishboneEnv) fishboneEnv.value = d.fishboneEnv || "";
+        a3Check.value = d.check || ""; a3Followup.value = d.followup || "";
+        
+        countermeasuresBody.innerHTML = '';
+        if(d.countermeasures && d.countermeasures.length) {
+            d.countermeasures.forEach((cm, idx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${idx+1}</td><td><textarea rows="2" class="cm-counter">${escapeHtml(cm.counter)}</textarea></td><td><input type="text" class="cm-target" value="${escapeHtml(cm.target)}"></td><td><input type="text" class="cm-pic" value="${escapeHtml(cm.pic)}"></td><td style="text-align:center"><button class="delete-row-btn" onclick="deleteCounterRow(this)">🗑️ Hapus</button></td>`;
+                countermeasuresBody.appendChild(row);
+            });
+        } else {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>1</td><td><textarea rows="2" class="cm-counter" placeholder="Deskripsi tindakan..."></textarea></td><td><input type="text" class="cm-target" placeholder="dd/mm/yyyy"></td><td><input type="text" class="cm-pic" placeholder="Nama PIC"></td><td style="text-align:center"><button class="delete-row-btn" onclick="deleteCounterRow(this)">🗑️ Hapus</button></td>`;
+            countermeasuresBody.appendChild(row);
+        }
+        imageList = (d.images || []).map((img, idx) => ({ id: nextId++, dataUrl: img }));
+        renderGallery();
+        renderA3Report();
+        document.getElementById('companyNameSetting').value = companyName;
+        document.getElementById('vendorNameSetting').value = vendorName;
+        alert(`✅ Data "${savedData.name}" berhasil dimuat!`);
+        if(document.getElementById('summaryModal').style.display === 'flex') document.getElementById('summaryModal').style.display = 'none';
+    }
+    
+    function renderDatabaseList() {
+        const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        const container = document.getElementById('databaseListContainer');
+        if(db.length === 0) { container.innerHTML = '<p style="text-align:center;">📭 Belum ada data</p>'; return; }
+        container.innerHTML = db.map((item, idx) => `
+            <div class="db-item">
+                <div class="db-info"><strong>📄 ${escapeHtml(item.name)}</strong><br><small>📅 ${item.savedAt}</small></div>
+                <div><button class="load-btn" data-idx="${idx}">📂 Load</button><button class="delete-db-btn" data-idx="${idx}">🗑️ Hapus</button></div>
+            </div>`).join('');
+        document.querySelectorAll('.load-btn').forEach(btn => btn.addEventListener('click', () => { const dbData = JSON.parse(localStorage.getItem(DB_KEY) || '[]'); if(dbData[parseInt(btn.dataset.idx)]) loadFromDatabase(dbData[parseInt(btn.dataset.idx)]); document.getElementById('databaseModal').style.display = 'none'; }));
+        document.querySelectorAll('.delete-db-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); if(confirm("Hapus data?")) { let dbData = JSON.parse(localStorage.getItem(DB_KEY) || '[]'); dbData.splice(parseInt(btn.dataset.idx),1); localStorage.setItem(DB_KEY,JSON.stringify(dbData)); renderDatabaseList(); renderSummaryTable(); } }));
+    }
+    
+    // Summary Table Functions
+    function renderSummaryTable() {
+        const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        const tbody = document.getElementById('summaryTableBody');
+        if(db.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada data</td></tr>'; return; }
+        tbody.innerHTML = db.map((item, idx) => {
+            const d = item.data;
+            const vendorText = (d.vendorName || '').split('\n')[0] || '-';
+            const targetDateText = d.targetDate ? new Date(d.targetDate).toLocaleDateString('id-ID') : '-';
+            const picText = d.pic || '-';
+            return `<tr>
+                <td>${idx+1}</td>
+                <td>${escapeHtml(d.title || '-')}</td>
+                <td>${d.date || '-'}</td>
+                <td>${escapeHtml(vendorText)}</td>
+                <td>${targetDateText}</td>
+                <td>${escapeHtml(picText)}</td>
+                <td class="action-buttons">
+                    <button class="btn-view" data-idx="${idx}">📄 View PDF</button>
+                    <button class="btn-edit-summary" data-idx="${idx}">✏️ Edit</button>
+                </td>
+            </tr>`;
+        }).join('');
+        
+        document.querySelectorAll('.btn-view').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const dbData = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+                const data = dbData[parseInt(btn.dataset.idx)];
+                if(data) {
+                    // Simpan data sementara untuk preview PDF
+                    const originalData = collectAllData();
+                    loadFromDatabase(data);
+                    setTimeout(() => { window.print(); setTimeout(() => loadFromDatabase({data:originalData}), 500); }, 100);
+                }
+            });
+        });
+        
+        document.querySelectorAll('.btn-edit-summary').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const dbData = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+                if(dbData[parseInt(btn.dataset.idx)]) {
+                    loadFromDatabase(dbData[parseInt(btn.dataset.idx)]);
+                    document.getElementById('summaryModal').style.display = 'none';
+                    document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    }
+    
+    function exportSummaryToExcel() {
+        const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        if(db.length === 0) { alert("Tidak ada data untuk diexport!"); return; }
+        const wsData = [["No", "Judul Masalah", "Tanggal", "Nama Vendor/Supplier", "Target", "PIC", "Waktu Simpan"]];
+        db.forEach((item, idx) => {
+            const d = item.data;
+            wsData.push([idx+1, d.title || '-', d.date || '-', (d.vendorName || '').split('\n')[0] || '-', d.targetDate || '-', d.pic || '-', item.savedAt]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        ws['!cols'] = [{wch:5},{wch:40},{wch:15},{wch:30},{wch:15},{wch:20},{wch:20}];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Summary_A3_Report");
+        XLSX.writeFile(wb, `Summary_A3_Report_${new Date().toISOString().slice(0,19)}.xlsx`);
+    }
+    
+    // Print & Excel
+    function printWithRename() { window.print(); }
+    function exportToPDFWithRename() { window.print(); }
+    function exportToExcelRapi() {
+        const cmData = getCountermeasuresData();
+        const wsData = [["A3 REPORT - " + companyName],["JUDUL", a3Title.value],["TANGGAL", a3Date.value],["WAKTU", a3Time.value],["AREA", a3Area.value],["PIC", a3Pic.value],["VENDOR", vendorName],["MEMBER HADIR", attendanceMembers.value],["TANGGAL TARGET", targetDateSummary.value],["PIC TARGET", targetPicSummary.value],["1. BACKGROUND", a3Background.value],["2. CURRENT", a3Current.value],["3. TARGET", a3Target.value],["4a. 5WHY", `1:${whyQ[1]?.value}\n2:${whyQ[2]?.value}\n3:${whyQ[3]?.value}\n4:${whyQ[4]?.value}\n5:${whyQ[5]?.value}`],["4b. FISHBONE", `Man:${fishboneMan?.value}\nMachine:${fishboneMachine?.value}\nMaterial:${fishboneMaterial?.value}\nMethod:${fishboneMethod?.value}\nMeasurement:${fishboneMeasurement?.value}\nEnvironment:${fishboneEnv?.value}`],["5. COUNTERMEASURES", ...cmData.map(c=>`${c.counter} | ${c.target} | ${c.pic}`)],["6. CHECK", a3Check.value],["7. FOLLOW UP", a3Followup.value]];
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        ws['!cols'] = [{wch:25},{wch:70}];
+        XLSX.writeFile(XLSX.utils.book_new(), ws, `A3_Report_${getAutoFileName()}.xlsx`);
+    }
+    
+    // Event Listeners
+    document.getElementById('printA3Btn').onclick = printWithRename;
+    document.getElementById('pdfSimulateBtn').onclick = exportToPDFWithRename;
+    document.getElementById('exportExcelBtn').onclick = exportToExcelRapi;
+    document.getElementById('clearAllBtn').onclick = clearAllForms;
+    document.getElementById('refreshReportBtn').onclick = renderA3Report;
+    
+    // Setting Modal
+    const settingModal = document.getElementById('settingModal');
+    document.getElementById('settingBtn').onclick = () => { document.getElementById('companyNameSetting').value = companyName; document.getElementById('vendorNameSetting').value = vendorName; settingModal.style.display = 'flex'; };
+    document.getElementById('closeSettingBtn').onclick = () => settingModal.style.display = 'none';
+    document.getElementById('saveSettingBtn').onclick = () => { if(document.getElementById('companyNameSetting').value.trim()) companyName = document.getElementById('companyNameSetting').value.trim(); if(document.getElementById('vendorNameSetting').value.trim()) vendorName = document.getElementById('vendorNameSetting').value.trim(); settingModal.style.display = 'none'; renderA3Report(); };
+    
+    // Database Modal
+    const databaseModal = document.getElementById('databaseModal');
+    document.getElementById('databaseBtn').onclick = () => { renderDatabaseList(); databaseModal.style.display = 'flex'; };
+    document.getElementById('closeDatabaseBtn').onclick = () => databaseModal.style.display = 'none';
+    document.getElementById('saveToDatabaseBtn').onclick = saveToDatabase;
+    document.getElementById('exportDatabaseBtn').onclick = exportDatabaseToJSON;
+    document.getElementById('uploadDatabaseBtn').onclick = () => document.getElementById('uploadDbFile').click();
+    document.getElementById('uploadDbFile').onchange = uploadDatabaseFile;
+    
+    // Summary Modal
+    const summaryModal = document.getElementById('summaryModal');
+    document.getElementById('summaryBtn').onclick = () => { renderSummaryTable(); summaryModal.style.display = 'flex'; };
+    document.getElementById('closeSummaryBtn').onclick = () => summaryModal.style.display = 'none';
+    document.getElementById('refreshSummaryBtn').onclick = () => renderSummaryTable();
+    document.getElementById('exportSummaryExcelBtn').onclick = exportSummaryToExcel;
+    
+    window.onclick = (e) => { if(e.target === settingModal) settingModal.style.display = 'none'; if(e.target === databaseModal) databaseModal.style.display = 'none'; if(e.target === summaryModal) summaryModal.style.display = 'none'; };
+    
+    // Auto update
+    const allInputs = [a3Title, a3Date, a3Time, a3Area, a3Pic, attendanceMembers, targetDateSummary, targetPicSummary, a3Background, a3Current, a3Target, a3Check, a3Followup, ...whyQ.slice(1), ...whyA.slice(1), fishboneMan, fishboneMachine, fishboneMaterial, fishboneMethod, fishboneMeasurement, fishboneEnv];
+    allInputs.forEach(inp => { if(inp) inp.addEventListener('input', renderA3Report); });
+    document.addEventListener('input', (e) => { if(e.target.classList && (e.target.classList.contains('cm-counter') || e.target.classList.contains('cm-target') || e.target.classList.contains('cm-pic'))) renderA3Report(); });
+    
+    function init() { renderGallery(); renderA3Report(); }
+    init();
+</script>
+</body>
+</html>
