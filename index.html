@@ -953,14 +953,15 @@
     }
     
     function saveToDatabase() {
-        // Inisialisasi Supabase
+  
+// 1. Inisialisasi Supabase (PASTI BENAR)
 const supabaseUrl = 'https://kbzovbzyutimootyodug.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtiem92Ynp5dXRpbW9vdHlvZHVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4ODI0NDQsImV4cCI6MjA5NjQ1ODQ0NH0.T2ksXNYuS9kugSx6y1YfBSaDc46NhG3VR7u2u9xrzME' ;
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtiem92Ynp5dXRpbW9vdHlvZHVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4ODI0NDQsImV4cCI6MjA5NjQ1ODQ0NH0.T2ksXNYuS9kugSx6y1YfBSaDc46NhG3VR7u2u9xrzME';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+// 2. Fungsi Simpan (Pastikan fungsi ini tidak terduplikasi)
 async function saveToDatabase() {
-    const data = collectAllData(); // Mengambil data dari form Anda
-    
+    const data = collectAllData(); 
     try {
         const { error } = await supabase
             .from('a3_reports')
@@ -970,7 +971,8 @@ async function saveToDatabase() {
         alert("✅ Data berhasil disimpan ke Cloud Supabase!");
         renderDatabaseList(); 
     } catch (err) {
-        alert("❌ Gagal menyimpan ke Supabase: " + err.message);
+        alert("❌ Gagal: " + err.message);
+        console.error(err);
     }
 }
     
