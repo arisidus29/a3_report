@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>A3 Report - Standar Otomotif (Dengan List Summary Data)</title>
@@ -952,16 +953,26 @@
     }
     
     function saveToDatabase() {
-        const data = collectAllData();
-        const fileName = getAutoFileName();
-        const saveData = { id: Date.now(), name: fileName, savedAt: new Date().toLocaleString(), data: data };
-        let db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-        db.unshift(saveData);
-        localStorage.setItem(DB_KEY, JSON.stringify(db));
-        alert(`✅ Data berhasil disimpan!\n📁 ${fileName}`);
-        renderDatabaseList();
-        if(document.getElementById('summaryModal').style.display === 'flex') renderSummaryTable();
+        // Inisialisasi Supabase
+const supabaseUrl = https://kbzovbzyutimootyodug.supabase.co/rest/v1/
+const supabaseKey = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtiem92Ynp5dXRpbW9vdHlvZHVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4ODI0NDQsImV4cCI6MjA5NjQ1ODQ0NH0.T2ksXNYuS9kugSx6y1YfBSaDc46NhG3VR7u2u9xrzME
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+async function saveToDatabase() {
+    const data = collectAllData(); // Mengambil data dari form Anda
+    
+    try {
+        const { error } = await supabase
+            .from('a3_reports')
+            .insert([{ data: data }]);
+
+        if (error) throw error;
+        alert("✅ Data berhasil disimpan ke Cloud Supabase!");
+        renderDatabaseList(); 
+    } catch (err) {
+        alert("❌ Gagal menyimpan ke Supabase: " + err.message);
     }
+}
     
     function exportDatabaseToJSON() {
         const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
